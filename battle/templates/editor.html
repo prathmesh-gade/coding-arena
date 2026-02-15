@@ -125,8 +125,12 @@ Files:
 const room="{{room}}";
 const username="{{username}}";
 
+/* ✅ AUTO DETECT ws / wss (IMPORTANT FOR RAILWAY) */
+
+const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+
 const socket=new WebSocket(
-"ws://"+window.location.host+"/ws/battle/"+room+"/"
+protocol + window.location.host + "/ws/battle/" + room + "/"
 );
 
 let editor;
@@ -165,6 +169,26 @@ code:editor.getValue()
 });
 
 });
+
+/* ================= SOCKET EVENTS ================= */
+
+socket.onopen = () => {
+
+console.log("🔥 WebSocket connected");
+
+};
+
+socket.onerror = (e) => {
+
+console.error("WebSocket ERROR:", e);
+
+};
+
+socket.onclose = () => {
+
+console.log("WebSocket closed");
+
+};
 
 socket.onmessage=(e)=>{
 
@@ -208,6 +232,8 @@ renderFiles();
 }
 
 };
+
+/* ================= FILE SYSTEM ================= */
 
 function renderFiles(){
 
@@ -256,6 +282,8 @@ file:name
 renderFiles();
 
 }
+
+/* ================= RUN CODE ================= */
 
 function runCode(){
 
