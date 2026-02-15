@@ -1,14 +1,18 @@
 import os
+import django
 
 from channels.routing import ProtocolTypeRouter, URLRouter
-from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
-
-import battle.routing
+from django.core.asgi import get_asgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "codingarena.settings")
 
+django.setup()
+
+import battle.routing
+
 application = ProtocolTypeRouter({
+
     "http": get_asgi_application(),
 
     "websocket": AuthMiddlewareStack(
@@ -16,4 +20,5 @@ application = ProtocolTypeRouter({
             battle.routing.websocket_urlpatterns
         )
     ),
+
 })
