@@ -4,21 +4,31 @@ Django settings for codingarena project.
 
 from pathlib import Path
 
+# ======================
 # BASE DIRECTORY
+# ======================
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+# ======================
 # SECURITY
+# ======================
+
 SECRET_KEY = 'django-insecure-nla9o5uyx_9=ylf4(=a(ok$@5(xi0i!5^6xa5zaz0t74(z_305'
 
-DEBUG = True
+DEBUG = False   # 🔥 MUST be False for live deployment
 
-ALLOWED_HOSTS = []
+# Allow all hosts temporarily (change later for security)
+ALLOWED_HOSTS = ["*"]
 
 
+# ======================
 # APPLICATIONS
+# ======================
+
 INSTALLED_APPS = [
-    'daphne',   # ADD THIS FIRST
+    'daphne',   # REQUIRED FIRST for Channels
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -32,7 +42,10 @@ INSTALLED_APPS = [
 ]
 
 
+# ======================
 # MIDDLEWARE
+# ======================
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -44,11 +57,17 @@ MIDDLEWARE = [
 ]
 
 
+# ======================
 # URLS
+# ======================
+
 ROOT_URLCONF = 'codingarena.urls'
 
 
+# ======================
 # TEMPLATES
+# ======================
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -66,14 +85,20 @@ TEMPLATES = [
 ]
 
 
+# ======================
 # WSGI + ASGI
+# ======================
+
 WSGI_APPLICATION = 'codingarena.wsgi.application'
 
-# 🔥 Required for Django Channels (WebSockets)
+# 🔥 REQUIRED for WebSockets
 ASGI_APPLICATION = "codingarena.asgi.application"
 
 
+# ======================
 # DATABASE
+# ======================
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -82,7 +107,10 @@ DATABASES = {
 }
 
 
+# ======================
 # PASSWORD VALIDATION
+# ======================
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -99,24 +127,55 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# ======================
 # INTERNATIONALIZATION
+# ======================
+
 LANGUAGE_CODE = 'en-us'
+
 TIME_ZONE = 'UTC'
+
 USE_I18N = True
+
 USE_TZ = True
 
 
-# STATIC FILES
+# ======================
+# STATIC FILES (IMPORTANT FOR LIVE)
+# ======================
+
 STATIC_URL = 'static/'
 
+# Required for production static collection
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
+
+# ======================
 # DEFAULT PRIMARY KEY
+# ======================
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# 🔥 CHANNEL LAYERS (Real-time backend)
+# ======================
+# CHANNEL LAYERS (Real-time backend)
+# ======================
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     }
 }
+
+
+# ======================
+# DEPLOYMENT SETTINGS
+# ======================
+
+# Fix CSRF errors on live domain
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.railway.app",
+]
+
+# Required when behind proxy (Railway/Render)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
