@@ -3,180 +3,169 @@ Django settings for codingarena project.
 """
 
 from pathlib import Path
+import os
 
-# ======================
+# ==================================================
 # BASE DIRECTORY
-# ======================
+# ==================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# ======================
+# ==================================================
 # SECURITY
-# ======================
+# ==================================================
 
-SECRET_KEY = 'django-insecure-nla9o5uyx_9=ylf4(=a(ok$@5(xi0i!5^6xa5zaz0t74(z_305'
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY",
+    "django-insecure-dev-key"
+)
 
-DEBUG = False   # 🔥 MUST be False for live deployment
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-# Allow all hosts temporarily (change later for security)
 ALLOWED_HOSTS = ["*"]
 
-
-# ======================
+# ==================================================
 # APPLICATIONS
-# ======================
+# ==================================================
 
 INSTALLED_APPS = [
-    'daphne',   # REQUIRED FIRST for Channels
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "daphne",   # MUST BE FIRST for Channels
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 
-    # Real-time + your app
-    'channels',
-    'battle',
+    # realtime
+    "channels",
+
+    # your app
+    "battle",
 ]
 
-
-# ======================
+# ==================================================
 # MIDDLEWARE
-# ======================
+# ==================================================
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
+    "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-
-# ======================
+# ==================================================
 # URLS
-# ======================
+# ==================================================
 
-ROOT_URLCONF = 'codingarena.urls'
+ROOT_URLCONF = "codingarena.urls"
 
-
-# ======================
+# ==================================================
 # TEMPLATES
-# ======================
+# ==================================================
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
+# ==================================================
+# ASGI + WSGI
+# ==================================================
 
-# ======================
-# WSGI + ASGI
-# ======================
-
-WSGI_APPLICATION = 'codingarena.wsgi.application'
-
-# 🔥 REQUIRED for WebSockets
+WSGI_APPLICATION = "codingarena.wsgi.application"
 ASGI_APPLICATION = "codingarena.asgi.application"
 
-
-# ======================
+# ==================================================
 # DATABASE
-# ======================
+# ==================================================
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
-
-# ======================
+# ==================================================
 # PASSWORD VALIDATION
-# ======================
+# ==================================================
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
-# ======================
+# ==================================================
 # INTERNATIONALIZATION
-# ======================
+# ==================================================
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
 USE_I18N = True
-
 USE_TZ = True
 
+# ==================================================
+# STATIC FILES (Production Ready)
+# ==================================================
 
-# ======================
-# STATIC FILES (IMPORTANT FOR LIVE)
-# ======================
-
-STATIC_URL = 'static/'
-
-# Required for production static collection
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# ======================
+# ==================================================
 # DEFAULT PRIMARY KEY
-# ======================
+# ==================================================
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# ==================================================
+# CHANNEL LAYERS (🔥 REDIS FOR PRODUCTION)
+# ==================================================
 
-# ======================
-# CHANNEL LAYERS (Real-time backend)
-# ======================
+REDIS_URL = os.environ.get("REDIS_URL")
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [REDIS_URL],
+            },
+        },
     }
-}
+else:
+    # fallback for local development
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
 
+# ==================================================
+# DEPLOYMENT SETTINGS (Railway)
+# ==================================================
 
-# ======================
-# DEPLOYMENT SETTINGS
-# ======================
-
-# Fix CSRF errors on live domain
 CSRF_TRUSTED_ORIGINS = [
     "https://*.railway.app",
 ]
 
-# Required when behind proxy (Railway/Render)
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
