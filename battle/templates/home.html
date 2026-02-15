@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Live Coding Arena 🔥</title>
+
+<style>
+
+body{
+margin:0;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#020617;
+font-family:Arial;
+color:white;
+overflow:hidden;
+}
+
+/* animated gradient background */
+body::before{
+content:"";
+position:fixed;
+width:200%;
+height:200%;
+background:linear-gradient(45deg,#00ffaa,#4da6ff,#ff66ff,#00ffaa);
+animation:bgmove 10s linear infinite;
+opacity:0.15;
+pointer-events:none;   /* ✅ THIS FIXES CLICK ISSUE */
+z-index:-1;            /* send background behind */
+}
+
+
+@keyframes bgmove{
+0%{transform:translate(-25%,-25%)}
+100%{transform:translate(0%,0%)}
+}
+
+.container{
+background:#0d1117;
+padding:40px;
+border-radius:14px;
+box-shadow:0 0 30px rgba(0,255,170,0.2);
+text-align:center;
+width:420px;
+}
+
+h1{
+color:#00ffaa;
+margin-bottom:20px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin-top:10px;
+background:#020617;
+border:1px solid #00ffaa;
+color:white;
+border-radius:6px;
+}
+
+button{
+margin-top:15px;
+width:100%;
+padding:12px;
+background:#00ffaa;
+border:none;
+color:black;
+font-weight:bold;
+cursor:pointer;
+border-radius:6px;
+transition:0.3s;
+}
+
+button:hover{
+transform:scale(1.05);
+background:#00ddaa;
+}
+
+.separator{
+margin:25px 0;
+border-top:1px solid #333;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🚀 Live Coding Arena</h1>
+
+<p>Create or join collaborative coding room</p>
+
+<!-- CREATE ROOM -->
+
+<form action="/create/" method="get">
+
+<button>Create New Room 🔥</button>
+
+</form>
+
+<div class="separator"></div>
+
+<!-- JOIN ROOM -->
+
+<input id="roomInput" placeholder="Enter Room Code (e.g abc123)">
+
+<button onclick="joinRoom()">Join Room</button>
+
+</div>
+
+<script>
+
+function joinRoom(){
+
+const room=document.getElementById("roomInput").value.trim();
+
+if(room===""){
+
+alert("Enter room code");
+return;
+
+}
+
+window.location="/room/"+room+"/";
+
+}
+
+</script>
+
+</body>
+</html>

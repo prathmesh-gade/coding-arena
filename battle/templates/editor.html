@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>ULTRA Cursor Dev Arena</title>
+
+<style>
+
+body{
+margin:0;
+background:#0d1117;
+color:white;
+font-family:Arial;
+display:flex;
+height:100vh;
+overflow:hidden;
+}
+
+.sidebar{
+width:260px;
+background:#020617;
+padding:15px;
+border-right:2px solid #00ffaa;
+}
+
+.editor{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+.toolbar{
+background:#111827;
+padding:8px;
+border-bottom:1px solid #00ffaa;
+}
+
+.tabs{
+display:flex;
+background:#111827;
+padding:8px;
+gap:10px;
+}
+
+.tab{
+background:#1f2937;
+padding:6px 12px;
+border-radius:6px;
+cursor:pointer;
+}
+
+.active{
+background:#00ffaa;
+color:black;
+}
+
+.avatar{
+display:inline-block;
+padding:5px 10px;
+margin:3px;
+border-radius:12px;
+font-size:12px;
+}
+
+#editor{
+flex:1;
+}
+
+#output{
+height:150px;
+background:#000;
+border-top:2px solid #00ffaa;
+padding:10px;
+overflow:auto;
+font-family:monospace;
+}
+
+</style>
+
+<script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<h2 style="color:#00ffaa;">Live Coding Arena</h2>
+
+Room: {{room}}<br><br>
+
+Users:
+<div id="avatars"></div>
+
+<hr>
+
+Files:
+<div id="files"></div>
+
+<input id="newfile" placeholder="new file">
+<button onclick="createFile()">+</button>
+
+</div>
+
+<div class="editor">
+
+<div class="toolbar">
+<select id="language">
+<option value="python">Python</option>
+</select>
+
+<button onclick="runCode()">Run ▶</button>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div id="editor"></div>
+
+<div id="output">Output...</div>
+
+</div>
+
+<script>
+
+const room="{{room}}";
+const username="{{username}}";
+
+const socket=new WebSocket(
+"ws://"+window.location.host+"/ws/battle/"+room+"/"
+);
+
+let editor;
+let files={"main.py":""};
+let currentFile="main.py";
+let isRemote=false;
+
+require.config({paths:{vs:"https://unpkg.com/monaco-editor@latest/min/vs"}});
+
+require(["vs/editor/editor.main"],function(){
+
+editor=monaco.editor.create(document.getElementById("editor"),{
+
+value:"",
+language:"python",
+theme:"vs-dark",
+automaticLayout:true,
+minimap:{enabled:true}
+
+});
+
+editor.onDidChangeModelContent(()=>{
+
+if(isRemote) return;
+
+files[currentFile]=editor.getValue();
+
+socket.send(JSON.stringify({
+
+type:"code",
+file:currentFile,
+code:editor.getValue()
+
+}));
+
+});
+
+});
+
+socket.onmessage=(e)=>{
+
+const data=JSON.parse(e.data);
+
+if(data.type==="presence"){
+
+let html="";
+data.users.forEach(c=>{
+html+=`<span class="avatar" style="background:${c}">${c}</span>`;
+});
+document.getElementById("avatars").innerHTML=html;
+
+}
+
+if(data.type==="code"){
+
+files[data.file]=data.code;
+
+if(data.file===currentFile){
+
+isRemote=true;
+
+let pos=editor.getPosition();
+
+editor.setValue(data.code);
+
+editor.setPosition(pos);
+
+isRemote=false;
+
+}
+
+}
+
+if(data.type==="file_create"){
+
+files[data.file]="";
+renderFiles();
+
+}
+
+};
+
+function renderFiles(){
+
+let html="";
+let tabs="";
+
+for(let f in files){
+
+html+=`<div onclick="switchFile('${f}')">${f}</div>`;
+tabs+=`<div class="tab ${f===currentFile?'active':''}" onclick="switchFile('${f}')">${f}</div>`;
+
+}
+
+document.getElementById("files").innerHTML=html;
+document.getElementById("tabs").innerHTML=tabs;
+
+}
+
+function switchFile(name){
+
+currentFile=name;
+
+isRemote=true;
+editor.setValue(files[name]);
+isRemote=false;
+
+renderFiles();
+
+}
+
+function createFile(){
+
+const name=document.getElementById("newfile").value;
+
+if(!name) return;
+
+files[name]="";
+
+socket.send(JSON.stringify({
+
+type:"file_create",
+file:name
+
+}));
+
+renderFiles();
+
+}
+
+function runCode(){
+
+fetch("/run/",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"X-CSRFToken":getCookie("csrftoken")
+},
+body:JSON.stringify({
+code:editor.getValue()
+})
+})
+.then(res=>res.json())
+.then(data=>{
+
+document.getElementById("output").innerText=data.result;
+
+});
+
+}
+
+function getCookie(name){
+
+let cookieValue=null;
+
+if(document.cookie && document.cookie!==''){
+
+const cookies=document.cookie.split(';');
+
+for(let i=0;i<cookies.length;i++){
+
+const cookie=cookies[i].trim();
+
+if(cookie.substring(0,name.length+1)===(name+'=')){
+
+cookieValue=decodeURIComponent(cookie.substring(name.length+1));
+
+break;
+
+}
+
+}
+
+}
+
+return cookieValue;
+
+}
+
+renderFiles();
+
+</script>
+
+</body>
+</html>
